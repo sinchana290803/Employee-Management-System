@@ -1,0 +1,181 @@
+	package project;
+
+	import java.awt.BorderLayout;
+import java.awt.GridLayout;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
+	public class EmployeeUI extends JFrame {
+	    private EmployeeService service;
+
+	    private JTextField idField, nameField, ageField, designationField, departmentField, salaryField;
+	    private JTextArea outputArea;
+
+	    public EmployeeUI() {
+	        service = new EmployeeService();
+
+	        setTitle("Employee Management System");
+	        setSize(600, 500);
+	        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	        setLayout(new BorderLayout());
+
+	        // ===== Input Panel =====
+	        JPanel inputPanel = new JPanel(new GridLayout(6, 2, 5, 5));
+
+	        inputPanel.add(new JLabel("ID:"));
+	        idField = new JTextField();
+	        inputPanel.add(idField);
+
+	        inputPanel.add(new JLabel("Name:"));
+	        nameField = new JTextField();
+	        inputPanel.add(nameField);
+
+	        inputPanel.add(new JLabel("Age:"));
+	        ageField = new JTextField();
+	        inputPanel.add(ageField);
+
+	        inputPanel.add(new JLabel("Designation:"));
+	        designationField = new JTextField();
+	        inputPanel.add(designationField);
+
+	        inputPanel.add(new JLabel("Department:"));
+	        departmentField = new JTextField();
+	        inputPanel.add(departmentField);
+
+	        inputPanel.add(new JLabel("Salary:"));
+	        salaryField = new JTextField();
+	        inputPanel.add(salaryField);
+
+	        add(inputPanel, BorderLayout.NORTH);
+
+	        // ===== Buttons =====
+	        JPanel buttonPanel = new JPanel();
+
+	        JButton addBtn = new JButton("Add");
+	        JButton viewBtn = new JButton("View");
+	        JButton updateBtn = new JButton("Update");
+	        JButton deleteBtn = new JButton("Delete");
+	        JButton viewAllBtn = new JButton("View All");
+
+	        buttonPanel.add(addBtn);
+	        buttonPanel.add(viewBtn);
+	        buttonPanel.add(updateBtn);
+	        buttonPanel.add(deleteBtn);
+	        buttonPanel.add(viewAllBtn);
+
+	        add(buttonPanel, BorderLayout.CENTER);
+
+	        // ===== Output Area =====
+	        outputArea = new JTextArea();
+	        outputArea.setEditable(false);
+	        add(new JScrollPane(outputArea), BorderLayout.SOUTH);
+
+	        // ===== Action Listeners =====
+	        addBtn.addActionListener(e -> addEmployee());
+	        viewBtn.addActionListener(e -> viewEmployee());
+	        updateBtn.addActionListener(e -> updateEmployee());
+	        deleteBtn.addActionListener(e -> deleteEmployee());
+	        viewAllBtn.addActionListener(e -> viewAllEmployees());
+	    }
+
+	    // === Methods connected to backend ===
+	    private void addEmployee() {
+	        try {
+	            int id = Integer.parseInt(idField.getText());
+	            String name = nameField.getText();
+	            int age = Integer.parseInt(ageField.getText());
+	            String designation = designationField.getText();
+	            String department = departmentField.getText();
+	            double salary = Double.parseDouble(salaryField.getText());
+
+	            Employee emp = new Employee(id, name, age, designation, department, salary);
+	            if (service.empset.add(emp)) {
+	                outputArea.setText("Employee added successfully:\n" + emp);
+	            } else {
+	                outputArea.setText("Employee with this ID already exists.");
+	            }
+	        } catch (Exception ex) {
+	            outputArea.setText("Invalid input. Please check your values.");
+	        }
+	    }
+
+	    private void viewEmployee() {
+	        try {
+	            int id = Integer.parseInt(idField.getText());
+	            for (Employee emp : service.empset) {
+	                if (emp.getId() == id) {
+	                    outputArea.setText("Employee Found:\n" + emp);
+	                    return;
+	                }
+	            }
+	            outputArea.setText("Employee with ID " + id + " not found.");
+	        } catch (Exception ex) {
+	            outputArea.setText("Enter a valid Employee ID.");
+	        }
+	    }
+
+	    private void updateEmployee() {
+	        try {
+	            int id = Integer.parseInt(idField.getText());
+	            for (Employee emp : service.empset) {
+	                if (emp.getId() == id) {
+	                    emp.setName(nameField.getText());
+	                    emp.setSalary(Double.parseDouble(salaryField.getText()));
+	                    outputArea.setText("Employee updated successfully:\n" + emp);
+	                    return;
+	                }
+	            }
+	            outputArea.setText("Employee not found.");
+	        } catch (Exception ex) {
+	            outputArea.setText("Invalid input.");
+	        }
+	    }
+
+	    private void deleteEmployee() {
+	        try {
+	            int id = Integer.parseInt(idField.getText());
+	            Employee empToDelete = null;
+	            for (Employee emp : service.empset) {
+	                if (emp.getId() == id) {
+	                    empToDelete = emp;
+	                }
+	            }
+	            if (empToDelete != null) {
+	                service.empset.remove(empToDelete);
+	                outputArea.setText("Employee deleted successfully.");
+	            } else {
+	                outputArea.setText("Employee not found.");
+	            }
+	        } catch (Exception ex) {
+	            outputArea.setText("Enter a valid Employee ID.");
+	        }
+	    }
+
+	    private void viewAllEmployees() {
+	        if (service.empset.isEmpty()) {
+	            outputArea.setText("No employees available.");
+	        } else {
+	            StringBuilder sb = new StringBuilder("All Employees:\n");
+	            for (Employee emp : service.empset) {
+	                sb.append(emp).append("\n");
+	            }
+	            outputArea.setText(sb.toString());
+	        }
+	    }
+
+	    public static void main(String[] args) {
+	        SwingUtilities.invokeLater(() -> {
+	            EmployeeUI ui = new EmployeeUI();
+	            ui.setVisible(true);
+	        });
+	    }
+	}
+
+
